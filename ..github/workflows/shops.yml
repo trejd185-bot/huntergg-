@@ -1,0 +1,39 @@
+name: Shop Hunter Eternal
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Запуск каждые 15 минут
+  workflow_dispatch:
+
+jobs:
+  run_bot:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install selenium webdriver-manager requests
+
+      - name: Run Script
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHANNEL: ${{ secrets.TG_CHANNEL }}
+        # Таймаут 14 минут
+        timeout-minutes: 14
+        run: python main.py
+
+      - name: Save History
+        run: |
+          git config user.name "ShopBot"
+          git config user.email "bot@shop.com"
+          git add shop_history.json
+          git commit -m "Update history" || echo "No changes"
+          git push
